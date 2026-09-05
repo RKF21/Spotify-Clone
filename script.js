@@ -69,32 +69,17 @@ const playMusic = (track, pause = false) => {
 }
 
 async function displayAlbums() {
-  // Fetch the list of songs
-  let a = await fetch(`/songs/`);
-  let response = await a.text();
+  let a = await fetch(`/songs/albums.json`);
+  let folders = await a.json();
 
-  // Parse the HTML content of the songs directory
-  const div = document.createElement("div");
-  div.innerHTML = response;
-
-  let anchors = div.getElementsByTagName('a');
   let cardContainer = document.querySelector(".cardContainer");
+  cardContainer.innerHTML = "";
 
-  // Loop through each <a> tag
-  let array = Array.from(anchors)
-  for (let index=0; index< array.length; index++) {
-    const e=array[index];
-    
-    if (e.href.includes("/songs/")) {
-      let folder = e.href.split("/").slice(-1)[0];
+  for (let folder of folders) {
+    let a = await fetch(`/songs/${folder}/info.json`);
+    let response = await a.json();
 
-      // Fetch the info.json from the album folder
-      let a = await fetch(`/songs/${folder}/info.json`);
-
-      let response = await a.json();
-
-      // Create the card HTML
-      cardContainer.innerHTML += `
+    cardContainer.innerHTML += `
                         <div data-folder="${folder}" class="card">
                             <div class="play">
                                 <svg xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision"
@@ -111,9 +96,8 @@ async function displayAlbums() {
                             <h2>${response.title}</h2>
                             <p>${response.description}</p>
                         </div>`;
-    }
   }
-  //Load the playlist whenever it's clicked
+
   Array.from(document.getElementsByClassName("card")).forEach(e => {
     e.addEventListener("click", async item => {
       songs = await getSongs(`songs/${item.currentTarget.dataset.folder}`)

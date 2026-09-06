@@ -131,23 +131,23 @@ async function main() {
   })
 
   previous.addEventListener("click", () => {
-    let index = songs.indexOf(currentSong.src.split("/").slice(-1)[0])
+    let index = songs.indexOf(decodeURIComponent(currentSong.src.split("/").slice(-1)[0]))
     if ((index - 1) >= 0) {
       playMusic(songs[index - 1])
     }
   })
 
   next.addEventListener("click", () => {
-    let index = songs.indexOf(currentSong.src.split("/").slice(-1)[0])
-    if ((index + 1) < (songs.length - 1)) {
+    let index = songs.indexOf(decodeURIComponent(currentSong.src.split("/").slice(-1)[0]))
+    if ((index + 1) < (songs.length)) {
       playMusic(songs[index + 1])
     }
   })
 
   document.querySelector(".range").getElementsByTagName("input")[0].addEventListener("change", (e) => {
     currentSong.volume = parseInt(e.target.value) / 100
-    if(currentSong.volume>0){
-      document.querySelector(".volume> img").src= document.querySelector(".volume> img").src.replace("Images/mute.svg", "Images/volume.svg")
+    if (currentSong.volume > 0) {
+      document.querySelector(".volume> img").src = document.querySelector(".volume> img").src.replace("Images/mute.svg", "Images/volume.svg")
     }
   })
 

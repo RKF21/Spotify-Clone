@@ -1,33 +1,24 @@
 let currentSong = new Audio();
 let songs;
+let currFolder;
 
 function formatTime(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = Math.floor(totalSeconds % 60);
-  // Pad with leading zeros to always have two digits
   const mm = String(minutes).padStart(2, '0');
   const ss = String(seconds).padStart(2, '0');
   return `${mm}:${ss}`;
 }
+
 async function getSongs(folder) {
   currFolder = folder;
-  // Use a relative path so you never hard‑code the port/origin
-  let a = await fetch(`/${folder}/`);
-  let response = await a.text();
 
-  // Inject into a dummy div to get <a> elements
-  const div = document.createElement("div");
-  div.innerHTML = response;
+  // folder looks like "songs/Arijit Singh" — extract just "Arijit Singh"
+  let folderName = folder.split("/").slice(-1)[0];
 
-  // Collect only .mp3 links
-  let as = div.getElementsByTagName("a");
-  songs = [];
-  for (let element of as) {
-    let href = element.href;
-    if (href.toLowerCase().endsWith(".mp3")) {
-      songs.push(href.split(`/${folder}/`)[1]);
-    }
-  }
+  // fetch the JSON file that sits directly inside songs/, named after the artist
+  let a = await fetch(`/songs/${folderName}.json`);
+  songs = await a.json();
 
   let songUL = document.querySelector(".songList").getElementsByTagName("ul")[0]
   songUL.innerHTML = ""
@@ -44,10 +35,7 @@ async function getSongs(folder) {
                       </div>
           </li>`
   }
-  /* if (songs.length) {
- var audio=new Audio(songs[0]);
- //await audio.play();
-  } */
+
   Array.from(document.querySelector(".songList").getElementsByTagName("li")).forEach(e => {
     e.addEventListener("click", element => {
       console.log(e.querySelector(".info").firstElementChild.innerHTML);
@@ -65,7 +53,6 @@ const playMusic = (track, pause = false) => {
   }
   document.querySelector(".songinfo").innerHTML = decodeURI(track)
   document.querySelector(".songtime").innerHTML = "00:00 / 00:00"
-
 }
 
 async function displayAlbums() {
@@ -106,13 +93,13 @@ async function displayAlbums() {
   })
 }
 
-// 2) Wire up the button to load + play
 async function main() {
 
-  await getSongs("songs/ncs")
+  await getSongs("songs/Arijit Singh")   // 👈 replace with your real default artist folder name if different
   playMusic(songs[0], true)
-  //Display all the albums
+
   displayAlbums()
+
   playnow.addEventListener("click", () => {
     if (currentSong.paused) {
       currentSong.play()
@@ -123,7 +110,7 @@ async function main() {
       playnow.src = "Images/play.svg"
     }
   })
-  //Time update event
+
   currentSong.addEventListener("timeupdate", () => {
     document.querySelector(".songtime").innerHTML = `${formatTime(currentSong.currentTime)}/${formatTime(currentSong.duration)}`
     document.querySelector(".circle").style.left = (currentSong.currentTime / currentSong.duration) * 100 + "%"
@@ -156,14 +143,14 @@ async function main() {
       playMusic(songs[index + 1])
     }
   })
-  //Add an event to the volume
+
   document.querySelector(".range").getElementsByTagName("input")[0].addEventListener("change", (e) => {
     currentSong.volume = parseInt(e.target.value) / 100
     if(currentSong.volume>0){
       document.querySelector(".volume> img").src= document.querySelector(".volume> img").src.replace("Images/mute.svg", "Images/volume.svg")
     }
   })
-  //Add an even listener to mute the track
+
   document.querySelector(".volume> img").addEventListener("click", e => {
     if (e.target.src.includes("Images/volume.svg")) {
       e.target.src = e.target.src.replace("Images/volume.svg", "Images/mute.svg")
